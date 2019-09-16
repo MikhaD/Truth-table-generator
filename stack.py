@@ -14,3 +14,5 @@ class Stack:
         return this.stack[-1]
     def height(this):
         return this.stack.__len__()
+    def clear(this):
+        this.stack = []
