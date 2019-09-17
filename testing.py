@@ -7,14 +7,17 @@ __author__ = 'Mikha'
 # result = re.search(r"not \(.*?\)", string)
 # print(result.group(0))
 # print(re.sub(r"not \(.*?\)", "test", string))\
-def restore(array):
-    """transform the array into a string that can be evaluated as a logical proposition"""
-    string = ""
-    for i, char in enumerate(str(array)):
-        if char in {"'", ","}: continue 
-        elif char == "[": char = "("
-        elif char == "]": char = ")"
-        string += char
-    return string
+a = [[[[[[[["sub"], ["sub", [[["two"]]], ["sub3"]]]]]]]]]
 
-print(restore(["this", ["array"], "is", "a", "test"]))
+def clean(array):
+    answer = []
+    for element in array:
+        if type(element) is list:
+            element = clean(element)
+            if len(element) == 1 or len(array) == 1:
+                answer.extend(element)
+                continue
+        answer.append(element)
+    return answer
+
+print(clean(a))

@@ -1,3 +1,9 @@
+# if and only if if a then b then not if a then c or not not not a
+# The above proposition, which was used in testing no longer works
+
+# not a breaks
+# if a then b breaks
+# if and only if a then b breaks
 """Generate a truth table for a logical proposition"""
 __author__ = 'Mikha'
 #15/09/2019
@@ -18,19 +24,19 @@ __author__ = 'Mikha'
 operators = {
 "!":["not", "~", "¬"],
 "↔":["<->", "->"],
-"↑":["nand", "|", "⊼"],
-"&":["and", "∧"],
-"⇒":["if and only if"],
-"→":["if"],
 "⟡":["then"],
 "⊕":["xor"],
 "⇔":["xnor", "<=>", "=>", "iff"],
+"⇒":["if and only if"],
+"→":["if"],
+"↑":["nand", "|", "⊼"],
+"&":["and", "∧"],
 "↓":["nor", "⊽"],
 "+":["or", "∨"]}
 
 from stack import Stack
 
-class testEx(Exception):
+class propositionError(Exception):
     pass
 
 def partition(string):
@@ -43,13 +49,13 @@ def partition(string):
             stack.push(i)
         elif char == ")":
             if stack.height() == 0:
-                raise testEx("Uneven brackets")
+                raise propositionError("Uneven brackets")
             lastOpen = stack.pop()
             if stack.height() == 0:
                 if lastOpen > start: result.append(string[start:lastOpen].strip())
                 result.append(partition(string[lastOpen+1:i]))
                 start = i + 1
-    if start < string.__len__(): result.append(string[start::].strip())
+    if start < len(string): result.append(string[start::].strip())
     return result
 
 def partitionIfs(array):
@@ -58,8 +64,8 @@ def partitionIfs(array):
     stack = Stack()
     sArray = str(array)[::-1]
     i = 0
-    while i < sArray.__len__():
-        lastRealClose = 0
+    lastRealClose = None
+    while i < len(sArray):
         if sArray[i] == "]":
             stack.push(i)
         elif sArray[i] == "[":
@@ -74,9 +80,10 @@ def partitionIfs(array):
             i += 2
         i += 1
     return eval(sArray[::-1])
-
+# The section of this function that checks whether a function is legal needs to be checked.
 def simplifyOperations(array):
     """simplify array of consecutive operations by removing useless nots and ensuring all operations are valid"""
+    if len(array) == 1 and array[0] is str and len(array[0]) == 1: return array
     global operators
     simplified = []
     allowOthers = True
@@ -85,21 +92,22 @@ def simplifyOperations(array):
         if operation == "!":
             nots += 1
             continue
-        elif operation in {"→", "⇒"}:
+        elif nots % 2 != 0:
+            simplified.append("!")
+            nots = 0
+        if operation in {"→", "⇒"}:
             simplified.append(operation)
             allowOthers = False
         elif allowOthers:
             simplified.append(operation)
             allowOthers = False
         else:
-            raise testEx(f"Invalid {operators[operation][0]} statement")
-        if nots % 2 != 0:
-            simplified.append("!")
-        nots = 0
+            raise propositionError(f"Invalid {operators[operation][0]} statement")
     if nots % 2 != 0:
         simplified.append("!")
     return simplified
 
+# Integrate simplify into simplify operations
 def simplify(array):
     """simplify"""
     simplified = []
@@ -111,7 +119,7 @@ def simplify(array):
     return simplified
 
 def refactor(array):
-    if array.__len__() == 1 and type(array[0]) is str: return array
+    if len(array) == 1 and type(array[0]) is str: return array
     """convert all non basic operations into their base operation equivalents, and replace all symbols with operations"""
     prfSufOps = {"↔":"['not', x, 'or', y]", "⇔":"[[x, 'and', y], 'or', 'not', [x, 'or', y]]", "↑":"['not', [x, 'and', y]]", "↓":"['not', [x, 'or', y]]", "⊕":"[[x, 'or', y], 'and', 'not', [x, 'and', y]]", "+":"[x, 'or', y]", "&":"[x, 'and', y]"}
     suffixOps = {"→":"['not', x, 'or', y]", "⇒":"[[x, 'and', y], 'or', 'not', [x, 'or', y]]"}
@@ -119,10 +127,11 @@ def refactor(array):
     global operators
     answer = []
     i = 0
-    while i < array.__len__():
+    while i < len(array):
         firstNot, secondNot = 0, 0
         x, y = [], []
         if type(array[i]) is list:
+            array[i] = refactor(array[i])
             i += 1
             continue
         elif array[i] in suffixOps:
@@ -137,63 +146,94 @@ def refactor(array):
             answer.append(eval(suffixOps[array[i]].replace("x", str(x)).replace("y", str(y))))
         elif array[i] in prfSufOps:
             try:
-                x = ["not", refactor(array[i-1])] if (i-2 >= 0 and array[i-2] == "!") else refactor(array[i-1])
+                x = ["not", refactor(array[i-1])] if (i-2 >= 0 and array[i-2] == "not") else refactor(array[i-1])
                 y = ["not", refactor(array[i+2])] if (array[i+1] == "!") else refactor(array[i+1])
             except IndexError:
-                raise testEx(f"invalid {operators[array[i]][0]} statement")
+                raise propositionError(f"invalid {operators[array[i]][0]} statement")
             answer.append(eval(prfSufOps[array[i]].replace("x", str(x)).replace("y", str(y))))
+        elif array[i] == "!":
+            array[i] = "not"
         i += len(x) + len(y) + (0 if type(array[i]) is list or array[i] not in suffixOps else 1)
         i += 1
+    if len(answer) == 0:
+        answer.extend(array)
+    return answer
+
+def clean(array):
+    """turn all lists that contain only one element into their element"""
+    answer = []
+    for element in array:
+        if type(element) is list:
+            element = clean(element)
+            if len(element) == 1 or len(array) == 1:
+                answer.extend(element)
+                continue
+        answer.append(element)
     return answer
 
 def restore(array):
     """transform the array into a string that can be evaluated as a logical proposition"""
     string = ""
-    for i, char in enumerate(str(array)):
+    for i, char in enumerate(str(array)[1:-1]):
         if char in {"'", ","}: continue 
         elif char == "[": char = "("
         elif char == "]": char = ")"
         string += char
     return string
 
+proposition = input("Please enter a proposition to generate a truth table for (0 to exit):\n")
+while proposition != "0":
+    variables = []
+    modedProp = proposition.lower()
+    # verbose = input("Verbose table (y/n, default n): ")
 
-variables = []
-proposition = input("Please enter a proposition to generate a truth table for:\n")
-modedProp = proposition.lower()
-# verbose = input("Verbose table (y/n, default n): ")
+    for ops in operators:
+        modedProp = modedProp.replace(ops, f"{ops} ")
+        for op in operators[ops]:
+            modedProp = modedProp.replace(op, f"{ops} ")
 
-for ops in operators:
-    modedProp = modedProp.replace(ops, f"{ops} ")
-    for op in operators[ops]:
-        modedProp = modedProp.replace(op, f"{ops} ")
+    for i, char in enumerate(modedProp):
+        if char in {"[", "{"}:
+            modedProp[i] = "("
+        elif char in {"]", "}"}:
+            modedProp[i] = ")"
+        elif char.isalpha() and char not in variables:
+            variables.append(char)
+            modedProp = modedProp.replace(char, f"({char})")
 
-for i, char in enumerate(modedProp):
-    if char in {"[", "{"}:
-        modedProp[i] = "("
-    elif char in {"]", "}"}:
-        modedProp[i] = ")"
-    elif char.isalpha() and char not in variables:
-        variables.append(char)
-        modedProp = modedProp.replace(char, f"({char})")
+    try:
+        modedProp = partition(modedProp)
+        # print(modedProp)
+        modedProp = simplify(modedProp)
+        # print(modedProp)
+        modedProp = partitionIfs(modedProp)
+        # print(modedProp)
+        modedProp = refactor(modedProp)
+        print(modedProp)
+        modedProp = clean(modedProp)
+        print(modedProp)
+        modedProp = restore(modedProp)
+        print(modedProp)
 
-# modedProp = partition(modedProp)
-# modedProp = simplify(modedProp)
-# modedProp = partitionIfs(modedProp)
-# modedProp = refactor(modedProp)
-# modedProp = restore(modedProp)
-# modedProp = modedProp[2:-2]
+        print()
+        for var in variables:
+            exec(f"{var} = 0")
+        try:
+            eval(modedProp)
+        except:
+            raise propositionError("Invalid proposition")
 
-# Find where the extra sets of outside brackets are being added and deal with them there
-modedProp = restore(refactor(partitionIfs(simplify(partition(modedProp)))))[2:-2]
-# print(modedProp)
+        for var in variables:
+            print(f"{var:^3}|", end="")
+        print(f" {proposition} |")
 
-print()
-for var in variables:
-    print(f"{var:^3}|", end="")
-print(f" {proposition} |")
+        for i in range(2**len(variables)):
+            for j, value in enumerate("{0:0{1}b}".format(i, len(variables))):
+                exec("{0} = {1}".format(variables[j], value))
+                print(f"{eval(variables[j]):^3}|", end="")
+            print(f"{1 if eval(modedProp) else 0:^{len(proposition)+2}}|")
 
-for i in range(2**len(variables)):
-    for j, value in enumerate("{0:0{1}b}".format(i, len(variables))):
-        exec("{0} = {1}".format(variables[j], value))
-        print(f"{eval(variables[j]):^3}|", end="")
-    print(f"{1 if eval(modedProp) else 0:^{len(proposition)+2}}|")
+    except propositionError as exceptionMessage:
+        print(exceptionMessage)
+    finally:
+        proposition = input("\nPlease enter a proposition to generate a truth table for (0 to exit):\n")
