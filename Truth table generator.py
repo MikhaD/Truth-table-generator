@@ -1,17 +1,11 @@
-# if and only if if a then b then not if a then c or not not not a
-# The above proposition, which was used in testing no longer works
-
-# not a breaks
-# if a then b breaks
-# if and only if a then b breaks
 """Generate a truth table for a logical proposition"""
 __author__ = 'Mikha'
 #15/09/2019
 # Put functions in a seperate file
 
-# Read allowed symbols from a JSON file
+# Add smart mode which puts every set of brackets on the truth table, with the exception of brackets with not <variable> in them, and uses generated symbols
 
-# do a bracket split on the unfiltered proposition in order to get the verbose mode sub propositions the way they were input
+# Read all symbols from a JSON file
 
 # hook up a pyqt5 gui with checkboxes for things like verbose, which symbols to accept for each operator, a button to clear etc.
 
@@ -23,21 +17,28 @@ __author__ = 'Mikha'
 # Order of operations is PARENTHATSES, NOT, AND, OR
 operators = {
 "!":["not", "~", "¬"],
-"↔":["<->", "->"],
 "⟡":["then"],
-"⊕":["xor"],
-"⇔":["xnor", "<=>", "=>", "iff"],
-"⇒":["if and only if"],
-"→":["if"],
-"↑":["nand", "|", "⊼"],
-"&":["and", "∧"],
-"↓":["nor", "⊽"],
-"+":["or", "∨"]}
+"⊕":["xor", "⊻"],
+"⇔":["xnor", "↔", "<->", "<=>", "≡", "iff"],
+"⇒":["->", "→", "=>", "⊃"],
+"◄":["if and only if"],
+"►":["if"],
+"⊼":["nand", "|", "↑"],
+"&":["and", "∧", "."],
+"⊽":["nor", "↓"],
+"∥":["or", "∨", "+"]}
 
 from stack import Stack
 
 class propositionError(Exception):
     pass
+
+def standardiseOperators(string, opsDict):
+    for ops in opsDict:
+        string = string.replace(ops, f"{ops} ")
+        for op in opsDict[ops]:
+            string = string.replace(op, f"{ops} ")
+    return string
 
 def partition(string):
     """Split a proposition up into lists where each list was a set of brackets or an atomic proposition"""
@@ -45,9 +46,9 @@ def partition(string):
     stack = Stack()
     start = 0
     for i, char in enumerate(string):
-        if char == "(":
+        if char in {"(", "[", "{"}:
             stack.push(i)
-        elif char == ")":
+        elif char in {")", "]", "}"}:
             if stack.height() == 0:
                 raise propositionError("Uneven brackets")
             lastOpen = stack.pop()
@@ -74,17 +75,16 @@ def partitionIfs(array):
             sArray = sArray[:lastClose] + "]" + sArray[lastClose:]
             lastRealClose = lastClose
             i += 1
-        elif sArray[i] in {"→", "⇒"}:
+        elif sArray[i] in {"►", "◄"}:
             sArray = sArray[:i+2] + "[" + sArray[i+2:]
             if lastRealClose: lastClose = lastRealClose
             i += 2
         i += 1
     return eval(sArray[::-1])
 # The section of this function that checks whether a function is legal needs to be checked.
-def simplifyOperations(array):
+def simplifyOperations(array, operators):
     """simplify array of consecutive operations by removing useless nots and ensuring all operations are valid"""
     if len(array) == 1 and array[0] is str and len(array[0]) == 1: return array
-    global operators
     simplified = []
     allowOthers = True
     nots = 0
@@ -95,7 +95,7 @@ def simplifyOperations(array):
         elif nots % 2 != 0:
             simplified.append("!")
             nots = 0
-        if operation in {"→", "⇒"}:
+        if operation in {"►", "◄"}:
             simplified.append(operation)
             allowOthers = False
         elif allowOthers:
@@ -115,39 +115,38 @@ def simplify(array):
         if type(element) is list:
             simplified.append(simplify(element))
         else:
-            simplified.extend(simplifyOperations(element.split()))
+            simplified.extend(simplifyOperations(element.split(), operators))
     return simplified
 
-def refactor(array):
+def refactor(array, operators):
     if len(array) == 1 and type(array[0]) is str: return array
     """convert all non basic operations into their base operation equivalents, and replace all symbols with operations"""
-    prfSufOps = {"↔":"['not', x, 'or', y]", "⇔":"[[x, 'and', y], 'or', 'not', [x, 'or', y]]", "↑":"['not', [x, 'and', y]]", "↓":"['not', [x, 'or', y]]", "⊕":"[[x, 'or', y], 'and', 'not', [x, 'and', y]]", "+":"[x, 'or', y]", "&":"[x, 'and', y]"}
-    suffixOps = {"→":"['not', x, 'or', y]", "⇒":"[[x, 'and', y], 'or', 'not', [x, 'or', y]]"}
-    words = {"&":"and", "+":"or"}
-    global operators
+    prfSufOps = {"⇒":"['not', x, 'or', y]", "⇔":"[[x, 'and', y], 'or', 'not', [x, 'or', y]]", "⊼":"['not', [x, 'and', y]]", "⊽":"['not', [x, 'or', y]]", "⊕":"[[x, 'or', y], 'and', 'not', [x, 'and', y]]", "∥":"[x, 'or', y]", "&":"[x, 'and', y]"}
+    suffixOps = {"►":"['not', x, 'or', y]", "◄":"[[x, 'and', y], 'or', 'not', [x, 'or', y]]"}
+    words = {"&":"and", "∥":"or"}
     answer = []
     i = 0
     while i < len(array):
         firstNot, secondNot = 0, 0
         x, y = [], []
         if type(array[i]) is list:
-            array[i] = refactor(array[i])
+            array[i] = refactor(array[i], operators)
             i += 1
             continue
         elif array[i] in suffixOps:
             if array[i+1] == "!":
                 firstNot = 1
-                x = ["not", refactor(array[i+1+firstNot])]
-            else: x = refactor(array[i+1+firstNot])
+                x = ["not", refactor(array[i+1+firstNot], operators)]
+            else: x = refactor(array[i+1+firstNot], operators)
             if array[i+3+firstNot] == "!":
                 secondNot = 1
-                y = ["not", refactor(array[i+3+firstNot+secondNot])]
-            else: y = refactor(array[i+3+firstNot+secondNot])
+                y = ["not", refactor(array[i+3+firstNot+secondNot], operators)]
+            else: y = refactor(array[i+3+firstNot+secondNot], operators)
             answer.append(eval(suffixOps[array[i]].replace("x", str(x)).replace("y", str(y))))
         elif array[i] in prfSufOps:
             try:
-                x = ["not", refactor(array[i-1])] if (i-2 >= 0 and array[i-2] == "not") else refactor(array[i-1])
-                y = ["not", refactor(array[i+2])] if (array[i+1] == "!") else refactor(array[i+1])
+                x = ["not", refactor(array[i-1], operators)] if (i-2 >= 0 and array[i-2] == "not") else refactor(array[i-1], operators)
+                y = ["not", refactor(array[i+2], operators)] if (array[i+1] == "!") else refactor(array[i+1], operators)
             except IndexError:
                 raise propositionError(f"invalid {operators[array[i]][0]} statement")
             answer.append(eval(prfSufOps[array[i]].replace("x", str(x)).replace("y", str(y))))
@@ -185,35 +184,37 @@ proposition = input("Please enter a proposition to generate a truth table for (0
 while proposition != "0":
     variables = []
     modedProp = proposition.lower()
-    # verbose = input("Verbose table (y/n, default n): ")
-
-    for ops in operators:
-        modedProp = modedProp.replace(ops, f"{ops} ")
-        for op in operators[ops]:
-            modedProp = modedProp.replace(op, f"{ops} ")
+    verbose = 1 if (input("Verbose table (y/n, default n): ").lower() == "y") else 0
+    
+    modedProp = standardiseOperators(modedProp, operators)
 
     for i, char in enumerate(modedProp):
-        if char in {"[", "{"}:
-            modedProp[i] = "("
-        elif char in {"]", "}"}:
-            modedProp[i] = ")"
-        elif char.isalpha() and char not in variables:
+        if char.isalpha() and char not in variables:
             variables.append(char)
             modedProp = modedProp.replace(char, f"({char})")
 
     try:
         modedProp = partition(modedProp)
         # print(modedProp)
+        if verbose and len(modedProp) > 1:
+            modedPropParts = [array for array in modedProp if type(array) is list and not (len(array) == 1 and type(array[0]) is str)]
+
+            if modedPropParts:
+                propParts = partition(proposition)
+                propParts = [array for array in propParts if type(array) is list]
+                propParts = [restore(array) for array in propParts]
+                modedPropParts = [simplify(array) for array in modedPropParts]
+                modedPropParts = [partitionIfs(array) for array in modedPropParts]
+                modedPropParts = [refactor(array, operators) for array in modedPropParts]
+                modedPropParts = [clean(array) for array in modedPropParts]
+                modedPropParts = [restore(array) for array in modedPropParts]
+        else: verbose = 0
+
         modedProp = simplify(modedProp)
-        # print(modedProp)
         modedProp = partitionIfs(modedProp)
-        # print(modedProp)
-        modedProp = refactor(modedProp)
-        print(modedProp)
+        modedProp = refactor(modedProp, operators)
         modedProp = clean(modedProp)
-        print(modedProp)
         modedProp = restore(modedProp)
-        print(modedProp)
 
         print()
         for var in variables:
@@ -225,12 +226,18 @@ while proposition != "0":
 
         for var in variables:
             print(f"{var:^3}|", end="")
+        if verbose and modedPropParts:
+            for subProp in propParts:
+                print(f" {subProp} |", end="")
         print(f" {proposition} |")
 
         for i in range(2**len(variables)):
             for j, value in enumerate("{0:0{1}b}".format(i, len(variables))):
                 exec("{0} = {1}".format(variables[j], value))
                 print(f"{eval(variables[j]):^3}|", end="")
+            if verbose and modedPropParts:
+                for i, subProp in enumerate(modedPropParts):
+                    print(f"{eval(subProp):^{len(propParts[i])+2}}|", end="")
             print(f"{1 if eval(modedProp) else 0:^{len(proposition)+2}}|")
 
     except propositionError as exceptionMessage:
