@@ -1,0 +1,189 @@
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | not a |
+ 0 |   1   |
+ 1 |   0   |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | a and b |
+ 0 | 0 |    0    |
+ 0 | 1 |    0    |
+ 1 | 0 |    0    |
+ 1 | 1 |    1    |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | a or b |
+ 0 | 0 |   0    |
+ 0 | 1 |   1    |
+ 1 | 0 |   1    |
+ 1 | 1 |   1    |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | a nand b |
+ 0 | 0 |    1     |
+ 0 | 1 |    1     |
+ 1 | 0 |    1     |
+ 1 | 1 |    0     |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | a nor b |
+ 0 | 0 |    1    |
+ 0 | 1 |    0    |
+ 1 | 0 |    0    |
+ 1 | 1 |    0    |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | a xor b |
+ 0 | 0 |    0    |
+ 0 | 1 |    1    |
+ 1 | 0 |    1    |
+ 1 | 1 |    0    |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | a xnor b |
+ 0 | 0 |    1     |
+ 0 | 1 |    0     |
+ 1 | 0 |    0     |
+ 1 | 1 |    1     |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | notaornotb |
+ 0 | 0 |     1      |
+ 0 | 1 |     1      |
+ 1 | 0 |     1      |
+ 1 | 1 |     0      |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | nota | (nota)andb |
+ 0 | 0 |  1   |     0      |
+ 0 | 1 |  1   |     1      |
+ 1 | 0 |  0   |     0      |
+ 1 | 1 |  0   |     0      |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | if a then b |
+ 0 | 0 |      1      |
+ 0 | 1 |      1      |
+ 1 | 0 |      0      |
+ 1 | 1 |      1      |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | if and only if a then b |
+ 0 | 0 |            1            |
+ 0 | 1 |            0            |
+ 1 | 0 |            0            |
+ 1 | 1 |            1            |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | a <-> b |
+ 0 | 0 |    1    |
+ 0 | 1 |    0    |
+ 1 | 0 |    0    |
+ 1 | 1 |    1    |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | a <=> b |
+ 0 | 0 |    1    |
+ 0 | 1 |    0    |
+ 1 | 0 |    0    |
+ 1 | 1 |    1    |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | c | if and only if if a then not not b then not if a then c or not not not a |
+ 0 | 0 | 0 |                                    1                                     |
+ 0 | 0 | 1 |                                    1                                     |
+ 0 | 1 | 0 |                                    1                                     |
+ 0 | 1 | 1 |                                    1                                     |
+ 1 | 0 | 0 |                                    0                                     |
+ 1 | 0 | 1 |                                    1                                     |
+ 1 | 1 | 0 |                                    1                                     |
+ 1 | 1 | 1 |                                    0                                     |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | c | if and only if (if a then b) then not (if a then c) | (if and only if (if a then b) then not (if a then c)) or not a |
+ 0 | 0 | 0 |                          0                          |                               1                                |
+ 0 | 0 | 1 |                          0                          |                               1                                |
+ 0 | 1 | 0 |                          0                          |                               1                                |
+ 0 | 1 | 1 |                          0                          |                               1                                |
+ 1 | 0 | 0 |                          0                          |                               0                                |
+ 1 | 0 | 1 |                          1                          |                               1                                |
+ 1 | 1 | 0 |                          1                          |                               1                                |
+ 1 | 1 | 1 |                          0                          |                               0                                |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | c | ((a -> b) <=> !(a -> c)) or !a |
+ 0 | 0 | 0 |               1                |
+ 0 | 0 | 1 |               1                |
+ 0 | 1 | 0 |               1                |
+ 0 | 1 | 1 |               1                |
+ 1 | 0 | 0 |               0                |
+ 1 | 0 | 1 |               1                |
+ 1 | 1 | 0 |               1                |
+ 1 | 1 | 1 |               0                |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ a | b | c | a or (not b or not c) | not a or c | (a or (not b or not c)) and (not a or c) |
+ 0 | 0 | 0 |           1           |     1      |                    1                     |
+ 0 | 0 | 1 |           1           |     1      |                    1                     |
+ 0 | 1 | 0 |           1           |     1      |                    1                     |
+ 0 | 1 | 1 |           0           |     1      |                    0                     |
+ 1 | 0 | 0 |           1           |     0      |                    0                     |
+ 1 | 0 | 1 |           1           |     1      |                    1                     |
+ 1 | 1 | 0 |           1           |     0      |                    0                     |
+ 1 | 1 | 1 |           1           |     1      |                    1                     |
+
+Please enter a proposition to generate a truth table for (0 to exit):
+Verbose table (y/n, default n): 
+
+ p | q | r | s | p ∧ ~q | r ∨ s | (p ∧ ~q) -> (r ∨ s) |
+ 0 | 0 | 0 | 0 |   0    |   0   |          1          |
+ 0 | 0 | 0 | 1 |   0    |   1   |          1          |
+ 0 | 0 | 1 | 0 |   0    |   1   |          1          |
+ 0 | 0 | 1 | 1 |   0    |   1   |          1          |
+ 0 | 1 | 0 | 0 |   0    |   0   |          1          |
+ 0 | 1 | 0 | 1 |   0    |   1   |          1          |
+ 0 | 1 | 1 | 0 |   0    |   1   |          1          |
+ 0 | 1 | 1 | 1 |   0    |   1   |          1          |
+ 1 | 0 | 0 | 0 |   1    |   0   |          0          |
+ 1 | 0 | 0 | 1 |   1    |   1   |          1          |
+ 1 | 0 | 1 | 0 |   1    |   1   |          1          |
+ 1 | 0 | 1 | 1 |   1    |   1   |          1          |
+ 1 | 1 | 0 | 0 |   0    |   0   |          1          |
+ 1 | 1 | 0 | 1 |   0    |   1   |          1          |
+ 1 | 1 | 1 | 0 |   0    |   1   |          1          |
+ 1 | 1 | 1 | 1 |   0    |   1   |          1          |
+
+Please enter a proposition to generate a truth table for (0 to exit):

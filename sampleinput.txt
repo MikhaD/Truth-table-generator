@@ -1,0 +1,37 @@
+not a
+y
+a and b
+y
+a or b
+y
+a nand b
+y
+a nor b
+n
+a xor b
+n
+a xnor b
+y
+notaornotb
+y
+(nota)andb
+y
+if a then b
+y
+if and only if a then b
+y
+a <-> b
+y
+a <=> b
+y
+if and only if if a then not not b then not if a then c or not not not a
+y
+(if and only if (if a then b) then not (if a then c)) or not a
+y
+((a -> b) <=> !(a -> c)) or !a
+n
+(a or (not b or not c)) and (not a or c)
+y
+(p ∧ ~q) -> (r ∨ s)
+y
+0
